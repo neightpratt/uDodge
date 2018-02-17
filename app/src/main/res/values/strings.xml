@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">uDodge</string>
     <string name="action_settings">Settings</string>
+    <string name="play">Play</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="avatar_picture">Avatar Picture</string>
 </resources>
