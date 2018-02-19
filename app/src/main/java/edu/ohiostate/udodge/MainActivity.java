@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
-        Intent intent = new Intent(this, null/*PlayActivity.class*/);
+        Intent intent = new Intent(this, PlayActivity.class);
         startActivity(intent);
     }
 }
