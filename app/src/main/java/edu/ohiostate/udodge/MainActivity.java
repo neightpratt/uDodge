@@ -19,6 +19,8 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
 public class MainActivity extends AppCompatActivity {
 
     private Button mPlayButton;
+    private Button mLeaderboardButton;
+    private Button mAvatarButton;
     private static final String TAG = "MainActivity";
 
     @Override
@@ -29,14 +31,31 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // set up buttons
-        mPlayButton = (Button) findViewById(R.id.buttonPlay);
-        mPlayButton.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(v);
+                switch (v.getId()) {
+                    case R.id.buttonPlay:
+                        sendMessage(v);
+                        break;
+                    case R.id.buttonLeaderboard:
+                        Toast.makeText(MainActivity.this, "LeaderBoard Button Pressed", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.buttonAvatarPicture:
+                        Toast.makeText(MainActivity.this, "Avatar Picture Button Pressed", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
-        });
+        };
+        // set up buttons
+        mPlayButton = (Button) findViewById(R.id.buttonPlay);
+        mLeaderboardButton = (Button) findViewById(R.id.buttonLeaderboard);
+        mAvatarButton = (Button) findViewById(R.id.buttonAvatarPicture);
+        mPlayButton.setOnClickListener(clickListener);
+        mLeaderboardButton.setOnClickListener(clickListener);
+        mAvatarButton.setOnClickListener(clickListener);
+
+
 
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
