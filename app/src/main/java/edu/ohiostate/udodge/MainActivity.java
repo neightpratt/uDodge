@@ -20,11 +20,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
+        Fragment fragment = fm.findFragmentById(R.id.main_fragment_container);
 
         if (fragment == null){
-            fragment = new MainActivityFragment();
-            fm.beginTransaction().add(R.id.fragment_container, fragment).commit();
+            fragment = new MainFragment();
+            fm.beginTransaction().add(R.id.main_fragment_container, fragment).commit();
         }
     }
 
@@ -56,11 +56,5 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy() called");
-    }
-
-    /** Called when the user taps the Send button */
-    public void sendMessage(View view) {
-        Intent intent = new Intent(this, PlayActivity.class);
-        startActivity(intent);
     }
 }
