@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -19,6 +20,8 @@ public class MainFragment extends Fragment {
     private Button mPlayButton;
     private Button mLeaderboardButton;
     private Button mAvatarButton;
+    private ImageView mVolumeIcon;
+    private Boolean mVolumeOn;
 
     @Override
     public void onCreate(Bundle savedInstance) {
@@ -45,6 +48,15 @@ public class MainFragment extends Fragment {
                     case R.id.buttonAvatarPicture:
                         Toast.makeText(getActivity(), "Avatar Picture Button Pressed", Toast.LENGTH_SHORT).show();
                         break;
+                    case R.id.volume_icon:
+                        if (mVolumeOn) {
+                            mVolumeIcon.setImageResource(R.drawable.volume_off_icon);
+                            mVolumeOn = false;
+                        } else {
+                            mVolumeIcon.setImageResource(R.drawable.volume_on_icon);
+                            mVolumeOn = true;
+                        }
+                        break;
                 }
             }
         };
@@ -52,10 +64,13 @@ public class MainFragment extends Fragment {
         mPlayButton = (Button) v.findViewById(R.id.buttonPlay);
         mLeaderboardButton = (Button) v.findViewById(R.id.buttonLeaderboard);
         mAvatarButton = (Button) v.findViewById(R.id.buttonAvatarPicture);
+        mVolumeIcon = (ImageView) v.findViewById(R.id.volume_icon);
         mPlayButton.setOnClickListener(clickListener);
         mLeaderboardButton.setOnClickListener(clickListener);
         mAvatarButton.setOnClickListener(clickListener);
+        mVolumeIcon.setOnClickListener(clickListener);
 
+        mVolumeOn = true;
         return v;
     }
 
