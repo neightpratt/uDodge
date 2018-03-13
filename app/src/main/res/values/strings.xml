@@ -4,4 +4,7 @@
     <string name="play">Play</string>
     <string name="leaderboard">Leaderboard</string>
     <string name="avatar_picture">Avatar Picture</string>
+    <string name="your_high_score">Your High Score</string>
+    <string name="global_high_score">Global High Scores</string>
+    <string name="end_button">End Game</string>
 </resources>

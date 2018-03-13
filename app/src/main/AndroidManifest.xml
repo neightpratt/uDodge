@@ -21,6 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".PlayActivity"></activity>
+        <activity android:name=".LeaderboardActivity"></activity>
     </application>
 
 </manifest>

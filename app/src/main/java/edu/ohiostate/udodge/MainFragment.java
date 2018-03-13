@@ -1,5 +1,6 @@
 package edu.ohiostate.udodge;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -37,13 +38,15 @@ public class MainFragment extends Fragment {
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent;
                 switch (v.getId()) {
                     case R.id.buttonPlay:
-                        Intent intent = new Intent(getActivity(), PlayActivity.class);
+                        intent = new Intent(getActivity(), PlayActivity.class);
                         startActivity(intent);
                         break;
                     case R.id.buttonLeaderboard:
-                        Toast.makeText(getActivity(), "LeaderBoard Button Pressed", Toast.LENGTH_SHORT).show();
+                        intent = new Intent(getActivity(), LeaderboardActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.buttonAvatarPicture:
                         Toast.makeText(getActivity(), "Avatar Picture Button Pressed", Toast.LENGTH_SHORT).show();
