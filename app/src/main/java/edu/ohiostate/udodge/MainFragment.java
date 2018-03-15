@@ -1,5 +1,6 @@
 package edu.ohiostate.udodge;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -8,17 +9,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainFragment extends Fragment {
 
-    private static final String TAG = "MainActivityFragment";
+    private static final String TAG = "MainFragment";
     private Button mPlayButton;
     private Button mLeaderboardButton;
     private Button mAvatarButton;
+    private ImageView mVolumeIcon;
+    private Boolean mVolumeOn;
 
     @Override
     public void onCreate(Bundle savedInstance) {
@@ -34,15 +38,27 @@ public class MainActivityFragment extends Fragment {
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent;
                 switch (v.getId()) {
                     case R.id.buttonPlay:
-                        sendMessage(v);
+                        intent = new Intent(getActivity(), PlayActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.buttonLeaderboard:
-                        Toast.makeText(getActivity(), "LeaderBoard Button Pressed", Toast.LENGTH_SHORT).show();
+                        intent = new Intent(getActivity(), LeaderboardActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.buttonAvatarPicture:
                         Toast.makeText(getActivity(), "Avatar Picture Button Pressed", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.volume_icon:
+                        if (mVolumeOn) {
+                            mVolumeIcon.setImageResource(R.drawable.volume_off_icon);
+                            mVolumeOn = false;
+                        } else {
+                            mVolumeIcon.setImageResource(R.drawable.volume_on_icon);
+                            mVolumeOn = true;
+                        }
                         break;
                 }
             }
@@ -51,12 +67,14 @@ public class MainActivityFragment extends Fragment {
         mPlayButton = (Button) v.findViewById(R.id.buttonPlay);
         mLeaderboardButton = (Button) v.findViewById(R.id.buttonLeaderboard);
         mAvatarButton = (Button) v.findViewById(R.id.buttonAvatarPicture);
+        mVolumeIcon = (ImageView) v.findViewById(R.id.volume_icon);
         mPlayButton.setOnClickListener(clickListener);
         mLeaderboardButton.setOnClickListener(clickListener);
         mAvatarButton.setOnClickListener(clickListener);
+        mVolumeIcon.setOnClickListener(clickListener);
 
+        mVolumeOn = true;
         return v;
-
     }
 
     @Override
@@ -87,11 +105,5 @@ public class MainActivityFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy() called");
-    }
-
-    /** Called when the user taps the Send button */
-    public void sendMessage(View view) {
-        Intent intent = new Intent(getActivity(), PlayActivity.class);
-        startActivity(intent);
     }
 }
