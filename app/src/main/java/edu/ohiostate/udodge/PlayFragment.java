@@ -176,6 +176,6 @@ public class PlayFragment extends Fragment {
             }
         });
 
-        return v/*new Game(getContext())*/;
+        return new Game(getContext());
     }
 }
