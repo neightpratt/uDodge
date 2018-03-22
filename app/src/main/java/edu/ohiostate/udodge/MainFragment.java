@@ -57,7 +57,7 @@ public class MainFragment extends Fragment {
                         break;
                     case R.id.buttonAvatarPicture:
                         intent = new Intent(getActivity(), AvatarActivity.class);
-                        startActivityForResult(intent, PICTURE_CODE);
+                        startActivity(intent);
                         break;
                     case R.id.volume_icon:
                         if (mVolumeOn) {

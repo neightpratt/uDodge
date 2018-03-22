@@ -2,6 +2,9 @@ package edu.ohiostate.udodge;
 
 import android.*;
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,8 +12,10 @@ import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -18,6 +23,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -30,8 +39,11 @@ import static android.graphics.Path.Direction.CW;
 public class PictureActivity extends AppCompatActivity {
 
     private ImageView mAvatarPicture;
-    private LinearLayout mContainer;
+    private Button mRetakeButton;
+    private Button mOkButton;
+    private Intent retakeIntent;
     private static final int READ_CODE = 79;
+    private static final int RETAKE_CODE = 88;
     private static final String TAG = "PictureActivity";
 
     @Override
@@ -39,6 +51,27 @@ public class PictureActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture);
 
+        // obtain references to the buttons
+        mRetakeButton = (Button) findViewById(R.id.retake_button);
+        mOkButton = (Button) findViewById(R.id.ok_button);
+
+        // button click listeners
+        mRetakeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // find the file and delete it
+                String fileUri = getImageURI();
+                File imgFile = new File(fileUri.substring(7));
+                imgFile.delete();
+
+                // fire the AvatarActivity to retake the picture
+                Intent intent = new Intent(PictureActivity.this, AvatarActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
+        // obtain the picture the user just took
         getPicture();
     }
 
@@ -55,45 +88,58 @@ public class PictureActivity extends AppCompatActivity {
     }
 
     private void findPictureInStorage() {
-        Log.d(TAG, "Permissions have already been obtained");
-        Bundle extras = getIntent().getExtras();
-        Uri imgSrc = (Uri) extras.get("uri");
+        String imgSrc = getImageURI();
+        Log.d(TAG, "Retrieved URI: " + imgSrc);
         //Log.d(TAG, "Image size: " + imgSrc.toString());
 
-        File imgFile = new File(imgSrc.toString().substring(7));
-        Bitmap bits = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+        if (imgSrc != null) {
+            File imgFile = new File(imgSrc.substring(7));
+            Bitmap bits = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
 
-        mAvatarPicture = (ImageView) findViewById(R.id.avatar_picture);
+            mAvatarPicture = (ImageView) findViewById(R.id.avatar_picture);
 
-        // get cropped image
-        bits = getRoundedShape(bits);
+            // get cropped image
+            bits = getRoundedShape(bits);
 
-        mAvatarPicture.setImageBitmap(bits);
-        mAvatarPicture.setRotation(-90);
+            mAvatarPicture.setImageBitmap(bits);
+            mAvatarPicture.setRotation(-90);
+        }
+    }
+
+    private String getImageURI() {
+        Log.d(TAG, "Intent: " + getIntent().toString());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return preferences.getString("avatar", null);
     }
 
     public Bitmap getRoundedShape(Bitmap scaleBitmapImage) {
-        int targetWidth = 800;
-        int targetHeight = 800;
+        WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int targetWidth = metrics.widthPixels;
+        int targetHeight = metrics.heightPixels;
 
-        Bitmap targetBitmap = Bitmap.createBitmap(targetWidth,
-                targetHeight, Bitmap.Config.ARGB_8888);
+        Bitmap targetBitmap = Bitmap.createBitmap(targetHeight,
+                targetWidth, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(targetBitmap);
         Path path = new Path();
-        path.addCircle(
+        /*path.addCircle(
                 ((float) targetWidth - 1) / 2,
                 ((float) targetHeight - 1) / 2,
-                (Math.min(((float) targetWidth - 65), ((float) targetHeight) - 65) / 2),
-                Path.Direction.CCW);
+                (Math.min(((float) targetWidth), ((float) targetHeight)) / 2),
+                Path.Direction.CCW);*/
+        path.addOval(new RectF(205, 82, targetHeight - 40,
+                targetWidth - 115), CCW);
 
         canvas.clipPath(path);
         Bitmap sourceBitmap = scaleBitmapImage;
         canvas.drawBitmap(
                 sourceBitmap,
                 new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
-                        .getHeight()), new Rect(0, 0, targetWidth,
-                        targetHeight), null);
+                        .getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
+                        .getHeight()), null);
         return targetBitmap;
     }
 

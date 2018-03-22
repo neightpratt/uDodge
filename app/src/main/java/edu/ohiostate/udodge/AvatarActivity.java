@@ -5,6 +5,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +16,7 @@ import android.graphics.RectF;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -142,14 +144,18 @@ public class AvatarActivity extends AppCompatActivity {
                     Uri pictureURI = getOutputMediaFileUri(pictureFile);
                     Log.d("FILE_WRITE", "Get URI");
 
-                    Log.d("RESULT", "Creating intent");
-                    Intent intent = new Intent();
-                    intent.putExtra("uri", pictureURI);
-                    Log.d("RESULT", "URI = " + pictureURI.toString());
-                    setResult(Activity.RESULT_OK, intent);
-                    Log.d("RESULT", "Result has been set. Back to main");
-                    finish();
-                    //Log.d("RESULT", "Back to Main");
+                    // store file URI in shared preferences
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = preferences.edit();
+                    Log.d("FILE_WRITE", "Avatar src: " + pictureURI.toString());
+                    editor.putString("avatar", pictureURI.toString());
+                    editor.commit();
+                    Log.d("FILE_WRITE", "Avatar src: " + preferences.getString("avatar", null));
+
+                    // go to PictureActivity
+                    Intent intent = new Intent(AvatarActivity.this, PictureActivity.class);
+                    startActivity(intent);
+
                 } catch (FileNotFoundException e) {
                     Log.e("After_Picture_Taken", "File not found");
                 } catch (IOException e) {
