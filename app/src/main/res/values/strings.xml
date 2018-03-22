@@ -7,4 +7,5 @@
     <string name="your_high_score">Your High Score</string>
     <string name="global_high_score">Global High Scores</string>
     <string name="end_button">End Game</string>
+    <string name="pic_instructions">Fit your face tightly within the oval for the best results.</string>
 </resources>

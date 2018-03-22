@@ -17,6 +17,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -59,10 +60,17 @@ public class AvatarActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     mCamera.takePicture(null, null, mPicture);
-                    Toast.makeText(AvatarActivity.this, "Taking picture", Toast.LENGTH_SHORT)
-                            .show();
                 }
             });
+
+            View container = findViewById(R.id.av_container);
+            Snackbar.make(container, "Fit your face tightly within the oval for the best results.", Snackbar.LENGTH_INDEFINITE)
+                    .setAction("CLOSE", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                        }
+                    }).show();
         }
 
         private void obtainCamera() {
@@ -148,9 +156,9 @@ public class AvatarActivity extends AppCompatActivity {
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = preferences.edit();
                     Log.d("FILE_WRITE", "Avatar src: " + pictureURI.toString());
-                    editor.putString("avatar", pictureURI.toString());
+                    editor.putString("temp_avatar", pictureURI.toString());
                     editor.commit();
-                    Log.d("FILE_WRITE", "Avatar src: " + preferences.getString("avatar", null));
+                    Log.d("FILE_WRITE", "Avatar src: " + preferences.getString("temp_avatar", null));
 
                     // go to PictureActivity
                     Intent intent = new Intent(AvatarActivity.this, PictureActivity.class);

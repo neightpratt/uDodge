@@ -31,7 +31,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import static android.graphics.Path.Direction.CCW;
 import static android.graphics.Path.Direction.CW;
@@ -41,6 +44,7 @@ public class PictureActivity extends AppCompatActivity {
     private ImageView mAvatarPicture;
     private Button mRetakeButton;
     private Button mOkButton;
+    private Button mCancelButton;
     private Intent retakeIntent;
     private static final int READ_CODE = 79;
     private static final int RETAKE_CODE = 88;
@@ -54,6 +58,7 @@ public class PictureActivity extends AppCompatActivity {
         // obtain references to the buttons
         mRetakeButton = (Button) findViewById(R.id.retake_button);
         mOkButton = (Button) findViewById(R.id.ok_button);
+        mCancelButton = (Button) findViewById(R.id.cancel_button);
 
         // button click listeners
         mRetakeButton.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +73,33 @@ public class PictureActivity extends AppCompatActivity {
                 Intent intent = new Intent(PictureActivity.this, AvatarActivity.class);
                 startActivity(intent);
 
+            }
+        });
+
+        mOkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // declare the picture the accepted avatar pic
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("acceptedAvatar", true);
+                editor.putString("real_avatar", getImageURI().substring(7));
+                editor.commit();
+
+                // go back to the home screen
+                Intent intent = new Intent(PictureActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // go back to the home screen
+                Intent intent = new Intent(PictureActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         });
 
@@ -103,13 +135,25 @@ public class PictureActivity extends AppCompatActivity {
 
             mAvatarPicture.setImageBitmap(bits);
             mAvatarPicture.setRotation(-90);
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bits.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+
+            try {
+                FileOutputStream fos = new FileOutputStream(imgFile);
+                fos.write(byteArray);
+                fos.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Error rewriting file: " + e.getStackTrace());
+            }
         }
     }
 
     private String getImageURI() {
         Log.d(TAG, "Intent: " + getIntent().toString());
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        return preferences.getString("avatar", null);
+        return preferences.getString("temp_avatar", null);
     }
 
     public Bitmap getRoundedShape(Bitmap scaleBitmapImage) {

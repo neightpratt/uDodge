@@ -41,20 +41,22 @@
             android:textSize="20sp"
             android:textStyle="bold"/>
     </LinearLayout>
+
     <ImageView
         android:id="@+id/volume_icon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_gravity="left|bottom"
-        android:src="@drawable/volume_on_icon"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginBottom="10dp"/>
+        android:src="@drawable/volume_on_icon" />
+
     <ImageView
         android:id="@+id/avatar_icon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_gravity="right|bottom"
-        android:src="@drawable/avatar_icon"
+        android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"/>
+        android:src="@drawable/avatar_icon" />
 </FrameLayout>
