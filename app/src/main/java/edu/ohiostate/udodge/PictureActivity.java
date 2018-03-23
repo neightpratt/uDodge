@@ -127,6 +127,7 @@ public class PictureActivity extends AppCompatActivity {
         if (imgSrc != null) {
             File imgFile = new File(imgSrc.substring(7));
             Bitmap bits = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            Log.d(TAG, imgFile.getAbsolutePath());
 
             mAvatarPicture = (ImageView) findViewById(R.id.avatar_picture);
 
@@ -174,8 +175,8 @@ public class PictureActivity extends AppCompatActivity {
                 ((float) targetHeight - 1) / 2,
                 (Math.min(((float) targetWidth), ((float) targetHeight)) / 2),
                 Path.Direction.CCW);*/
-        path.addOval(new RectF(205, 82, targetHeight - 40,
-                targetWidth - 115), CCW);
+        /*path.addOval(new RectF(205, 82, targetHeight - 40,
+                targetWidth - 115), CCW);*/
 
         canvas.clipPath(path);
         Bitmap sourceBitmap = scaleBitmapImage;
@@ -184,6 +185,7 @@ public class PictureActivity extends AppCompatActivity {
                 new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
                         .getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
                         .getHeight()), null);
+        Log.d(TAG, Integer.toString(targetBitmap.getHeight()));
         return targetBitmap;
     }
 

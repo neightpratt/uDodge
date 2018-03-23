@@ -142,6 +142,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     public void gameOver () {
         freezeGame = true;
+        thread.setRunning(false);
 
         /*
          * Check local high score
@@ -219,6 +220,14 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                             score.setScore(mScore);
                             mDatabase.child("scores").child(score.getUid()).setValue(score);
 
+                            ((Activity) getContext()).finish();
+                        }
+                    });
+
+                    // Click listener for when the user presses cancel
+                    builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
                             ((Activity) getContext()).finish();
                         }
                     });
@@ -420,6 +429,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true;
         thread.setRunning(false);
+        freezeGame = true;
         while (retry) {
             try {
                 thread.join();

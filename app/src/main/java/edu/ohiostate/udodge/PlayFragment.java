@@ -161,6 +161,8 @@ public class PlayFragment extends Fragment {
                                 }
                             });
 
+
+
                             builder.show();
                         }else{
                             getActivity().finish();
