@@ -85,12 +85,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //get resources
         charBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.test_character); //load character image
         normalBallBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.normal_ball); //load character image
-        scaledBallBitmap = Bitmap.createScaledBitmap(normalBallBitmap, 250, 250, false);
         background = BitmapFactory.decodeResource(getResources(),R.drawable.gym); //load a background
-        //create character object
-        character = new Character(Bitmap.createScaledBitmap(charBitmap, 400, 600, false)); //create new character with specified bitmap
-        characterWidth = character.getBitmap().getWidth();
-        characterHeight = character.getBitmap().getHeight();
         //create arrays for holding character/ball positions
         characterXPositions = new ArrayList<>(3);
         ballXPositions = new ArrayList<>(3);
@@ -110,11 +105,6 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         countDownPaint.setTextSize(250);
         countDownPaint.setTypeface(Typeface.DEFAULT_BOLD);
         fpsPaint.setTextSize(30);
-        //add balls to dodge ball array
-        for (int i = 0; i < TOTAL_NUM_BALLS; i++) {
-            dodgeBalls.add(new Ball(scaledBallBitmap));
-        }
-        ballToThrow = 0;
 
         //Set thread
         getHolder().addCallback(this);
@@ -131,7 +121,17 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         super.onSizeChanged(w, h, oldw, oldh);
         screenWidth = w;
         screenHeight = h;
+        //create character object
+        character = new Character(Bitmap.createScaledBitmap(charBitmap, (int)(screenWidth * 0.3), (int)(screenHeight * 0.4), false));
+        characterWidth = character.getBitmap().getWidth();
+        characterHeight = character.getBitmap().getHeight();
         background = Bitmap.createScaledBitmap(background, screenWidth, screenHeight, false);
+        scaledBallBitmap = Bitmap.createScaledBitmap(normalBallBitmap, screenHeight / 9, screenHeight / 9, false);
+        //add balls to dodge ball array
+        for (int i = 0; i < TOTAL_NUM_BALLS; i++) {
+            dodgeBalls.add(new Ball(scaledBallBitmap));
+        }
+        ballToThrow = 0;
         characterXPositions.add((screenWidth / 4) - (characterWidth / 2));
         characterXPositions.add((screenWidth / 2) - (characterWidth / 2));
         characterXPositions.add((3 * screenWidth / 4) - (characterWidth / 2));
