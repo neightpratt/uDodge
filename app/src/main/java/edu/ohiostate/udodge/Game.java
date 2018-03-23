@@ -1,17 +1,33 @@
 package edu.ohiostate.udodge;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.EditText;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -19,6 +35,15 @@ import java.util.Random;
  */
 
 public class Game extends SurfaceView implements SurfaceHolder.Callback {
+
+    private Comparator<Score> comparator = new Comparator<Score>(){
+
+        @Override
+        public int compare(Score o1, Score o2){
+            return o2.getScore() - o1.getScore();
+        }
+    };
+
     //constants
     static final int MIN_SWIPE_DISTANCE = 150;
     static final int BALL_SPEED_SLOW = 10;
@@ -36,7 +61,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     int characterWidth;
     int characterHeight;
     Bitmap background;
-    int score;
+    private int mScore;
     int countDown;
     Paint scorePaint;
     Paint countDownPaint;
@@ -76,6 +101,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     Bitmap normalBallBitmap;
     Bitmap scaledBallBitmap;
 
+    private DatabaseReference mDatabase;
+    private int maxList = 100;
+
     public Game(Context context) {
         super(context);
         prepareGame();
@@ -100,7 +128,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         freezeGame = false;
         ballThrowRateMS = 1000;
         random = new Random();
-        score = 0;
+        mScore = 0;
         countDown = 3;
         scorePaint = new Paint();
         countDownPaint = new Paint();
@@ -124,6 +152,98 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     public void gameOver () {
         freezeGame = true;
+
+        /*
+         * Check local high score
+         */
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        int score = preferences.getInt("score", 0);
+
+        /*
+         * If the score of the current game is greater than local high score, update local high score
+         */
+        if (mScore > score){
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("score", mScore);
+            editor.commit();
+        }
+
+        /*
+         * Pull the global database to see if the current score is in the top 100 scores
+         */
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("scores").addListenerForSingleValueEvent(new ValueEventListener(){
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot){
+                /*
+                 * Get the global high scores
+                 */
+                List<Score> scores = new ArrayList<>();
+                for (DataSnapshot scoresDataSnapshot : dataSnapshot.getChildren()){
+                    Score score = scoresDataSnapshot.getValue(Score.class);
+                    scores.add(score);
+                }
+
+                /*
+                 * Order them greatest to least
+                 */
+                Collections.sort(scores, comparator);
+
+                /*
+                 * Check if the database has less than the max amount of entries or if the current
+                 * score is greater than the lowest score in the database
+                 */
+                Boolean add = false;
+                if (scores.size() < maxList){
+                    add = true;
+                }else if (mScore > scores.get(maxList - 1).getScore()){
+                    // Remove the lowest score from the database
+                    mDatabase.child("scores").child(scores.get(maxList - 1).getUid()).removeValue();
+                    add = true;
+                }
+
+                /*
+                 * If the score can be added to the database, bring up a dialog pop up window asking
+                 * for a name for the score
+                 */
+                if (add) {
+                    // Setup the pop up window
+                    AlertDialog.Builder builder = new AlertDialog.Builder(((Activity) getContext()));
+                    builder.setTitle("Congratulations!");
+                    builder.setMessage("Congratulations! You are in the top 100! Enter your name:");
+
+                    final EditText input = new EditText((Activity) getContext());
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    builder.setView(input);
+
+                    // Click listener for when the user presses okay
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Add the score to the database
+                            Score score = new Score();
+                            score.setUid(mDatabase.child("scores").push().getKey());
+                            score.setName(input.getText().toString());
+                            score.setScore(mScore);
+                            mDatabase.child("scores").child(score.getUid()).setValue(score);
+
+                            ((Activity) getContext()).finish();
+                        }
+                    });
+
+                    builder.show();
+                }else{
+                    ((Activity) getContext()).finish();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError){
+
+            }
+        });
     }
 
     @Override
@@ -150,7 +270,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //balls are thrown at the rate of 1 per second and this rate speed up as time goes by
         if(now - previousFrameTime2 > ballThrowRateMS) {
             previousFrameTime2 = now;
-            score += 1;
+            mScore += 1;
             //randomized ball throwing
             int doubleThrow = random.nextInt(5);
             if (doubleThrow == 0) {
@@ -199,7 +319,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                     if (ball.getPositionNumber() != character.getPositionNumber()) { //successful dodge
                         ball.missed();
                         ball.setBitmap(scaledBallBitmap);
-                        score += POINTS_PER_DODGING;
+                        mScore += POINTS_PER_DODGING;
                     } else { //got hit
                         ball.hit();
                         ball.setBitmap(scaledBallBitmap);
@@ -226,7 +346,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         //Draw HUD info
-        String scoreText = "Score: " + score;
+        String scoreText = "Score: " + mScore;
         canvas.drawText(framesCountAvg+" fps", 40, 70, fpsPaint);
         canvas.drawText(scoreText, (screenWidth / 2) - (scorePaint.measureText(scoreText) / 2), 70, scorePaint);
     }
@@ -351,8 +471,11 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                     c = surfaceHolder.lockCanvas(null);
                     synchronized (surfaceHolder) {
                         //call methods to draw and process next fame
-                        if (!freezeGame) gameView.myUpdate();
-                        gameView.myDraw(c);
+                        if (!freezeGame){
+                            gameView.myUpdate();
+                            gameView.myDraw(c);
+                        }
+
                     }
                 } finally {
                     if (c != null) {
