@@ -9,14 +9,16 @@ import java.util.ArrayList;
  */
 
 public class Character {
-    private Bitmap bitmap;
+    private Bitmap bodyBitmap;
+    private Bitmap headBitmap;
 
     private int positionNumber;
     private int xPos, yPos;
 
     //constructor
-    public Character(Bitmap bm) {
-        bitmap = bm;
+    public Character(Bitmap bodyBM, Bitmap headBM) {
+        bodyBitmap = bodyBM;
+        headBitmap = headBM;
 
         xPos = 0;
         yPos = 0;
@@ -24,13 +26,17 @@ public class Character {
     }
 
     //getters and setters
-    public Bitmap getBitmap() {
-        return bitmap;
+    public Bitmap getBodyBitmap() {
+        return bodyBitmap;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+    public void setBodyBitmap(Bitmap bitmap) {
+        this.bodyBitmap = bitmap;
     }
+
+    public Bitmap getHeadBitmap() { return headBitmap; }
+
+    public void setHeadBitmap(Bitmap bitmap) { this.headBitmap = bitmap; }
 
     public int getPositionNumber() {
         return positionNumber;

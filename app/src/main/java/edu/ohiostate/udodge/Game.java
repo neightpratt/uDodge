@@ -58,13 +58,13 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     //game vars
     int screenWidth;
     int screenHeight;
-    int characterWidth;
-    int characterHeight;
+    int characterBodyWidth;
+    int characterBodyHeight;
+    int characterHeadWidth;
+    int characterHeadHeight;
     Bitmap background;
     private int mScore;
-    int countDown;
     Paint scorePaint;
-    Paint countDownPaint;
     int ballToThrow;
     Random random;
     int ballThrowRateMS;
@@ -93,7 +93,10 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     //Character movement
     Character character;
     private ArrayList<Integer> characterXPositions;
-    Bitmap charBitmap;
+    Bitmap charBodyBitmap;
+    Bitmap charHeadBitmap;
+    Bitmap scaledCharBodyBitmap;
+    Bitmap scaledCharHeadBitmap;
 
     //obstacles
     private ArrayList<Ball> dodgeBalls;
@@ -111,7 +114,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     public void prepareGame () {
         //get resources
-        charBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.test_character); //load character image
+        charBodyBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.avatar_body); //load character body
+        //*************************************INSERT REAL HEAD IN HERE OR USE DEFAULT*****************************************************************************
+        charHeadBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.default_head); //load character head
         normalBallBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.normal_ball); //load character image
         background = BitmapFactory.decodeResource(getResources(),R.drawable.gym); //load a background
         //create arrays for holding character/ball positions
@@ -124,20 +129,47 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         ballThrowRateMS = 1000;
         random = new Random();
         mScore = 0;
-        countDown = 3;
         scorePaint = new Paint();
-        countDownPaint = new Paint();
         fpsPaint = new Paint();
         scorePaint.setTextSize(50);
         scorePaint.setTypeface(Typeface.DEFAULT_BOLD);
-        countDownPaint.setTextSize(250);
-        countDownPaint.setTypeface(Typeface.DEFAULT_BOLD);
         fpsPaint.setTextSize(30);
 
         //Set thread
         getHolder().addCallback(this);
 
         setFocusable(true);
+    }
+
+    @Override
+    public void onSizeChanged (int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        screenWidth = w;
+        screenHeight = h;
+        //create character object
+        scaledCharBodyBitmap = Bitmap.createScaledBitmap(charBodyBitmap, (int)(screenWidth * 0.35), (int)(screenHeight * 0.3), false);
+        scaledCharHeadBitmap = Bitmap.createScaledBitmap(charHeadBitmap, (int)(screenWidth * 0.13), (int)(screenHeight * 0.13), false);
+        character = new Character(scaledCharBodyBitmap, scaledCharHeadBitmap);
+        characterBodyWidth = character.getBodyBitmap().getWidth();
+        characterBodyHeight = character.getBodyBitmap().getHeight();
+        characterHeadWidth = character.getHeadBitmap().getWidth();
+        characterHeadHeight = character.getHeadBitmap().getHeight();
+        background = Bitmap.createScaledBitmap(background, screenWidth, screenHeight, false);
+        scaledBallBitmap = Bitmap.createScaledBitmap(normalBallBitmap, (int)(screenHeight * 0.13), (int)(screenHeight * 0.13), false);
+        //add balls to dodge ball array
+        for (int i = 0; i < TOTAL_NUM_BALLS; i++) {
+            dodgeBalls.add(new Ball(scaledBallBitmap));
+        }
+        ballToThrow = 0;
+        characterXPositions.add((screenWidth / 4) - (characterBodyWidth / 2));
+        characterXPositions.add((screenWidth / 2) - (characterBodyWidth / 2));
+        characterXPositions.add((3 * screenWidth / 4) - (characterBodyWidth / 2));
+        ballXPositions.add(screenWidth / 4); //since ball size changes we cant subtract half of width here like we do for character
+        ballXPositions.add(screenWidth / 2);
+        ballXPositions.add(3 * screenWidth / 4);
+        character.setPositionNumber(1);
+        character.setxPos(characterXPositions.get(character.getPositionNumber()));
+        character.setyPos((int)(screenHeight * 0.25));
     }
 
     public void gameOver () {
@@ -234,6 +266,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
                     builder.show();
                 }else{
+                    //********************************************need to display received score and give options to retry or quit*****************************************************
                     ((Activity) getContext()).finish();
                 }
             }
@@ -243,33 +276,6 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
             }
         });
-    }
-
-    @Override
-    public void onSizeChanged (int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        screenWidth = w;
-        screenHeight = h;
-        //create character object
-        character = new Character(Bitmap.createScaledBitmap(charBitmap, (int)(screenWidth * 0.3), (int)(screenHeight * 0.4), false));
-        characterWidth = character.getBitmap().getWidth();
-        characterHeight = character.getBitmap().getHeight();
-        background = Bitmap.createScaledBitmap(background, screenWidth, screenHeight, false);
-        scaledBallBitmap = Bitmap.createScaledBitmap(normalBallBitmap, screenHeight / 9, screenHeight / 9, false);
-        //add balls to dodge ball array
-        for (int i = 0; i < TOTAL_NUM_BALLS; i++) {
-            dodgeBalls.add(new Ball(scaledBallBitmap));
-        }
-        ballToThrow = 0;
-        characterXPositions.add((screenWidth / 4) - (characterWidth / 2));
-        characterXPositions.add((screenWidth / 2) - (characterWidth / 2));
-        characterXPositions.add((3 * screenWidth / 4) - (characterWidth / 2));
-        ballXPositions.add(screenWidth / 4); //since ball size changes we cant subtract half of width here like we do for character
-        ballXPositions.add(screenWidth / 2);
-        ballXPositions.add(3 * screenWidth / 4);
-        character.setPositionNumber(1);
-        character.setxPos(characterXPositions.get(character.getPositionNumber()));
-        character.setyPos(screenHeight / 5);
     }
 
     public void myUpdate() {
@@ -324,7 +330,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                 ball.setyPos(ball.getyPos() - BALL_SPEED_SLOW);
                 ball.setBitmap(Bitmap.createScaledBitmap(normalBallBitmap, currentBallWidth - 1, currentBallWidth - 1, false));
                 ball.setxPos(ballXPositions.get(ball.getPositionNumber()) - (ball.getBitmap().getWidth() / 2));
-                if (ball.getyPos() < character.getyPos() + characterHeight / 2) {
+                if (ball.getyPos() < character.getyPos() + characterBodyHeight / 2) {
                     if (ball.getPositionNumber() != character.getPositionNumber()) { //successful dodge
                         ball.missed();
                         ball.setBitmap(scaledBallBitmap);
@@ -345,8 +351,8 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         canvas.drawBitmap(background, 0, 0, null);
 
         //Draw character
-        canvas.drawBitmap(character.getBitmap(), character.getxPos(), character.getyPos(), null); //Draw the character on the rotated canvas.
-
+        canvas.drawBitmap(character.getBodyBitmap(), character.getxPos(), character.getyPos(), null); //Draw the character on the rotated canvas.
+        canvas.drawBitmap(character.getHeadBitmap(), character.getxPos() + (characterBodyWidth / 2) - (characterHeadWidth / 2) + 5, character.getyPos() - (int)(characterHeadHeight * 0.95), null);
         //Draw dodge balls
         for (Ball ball : dodgeBalls) {
             if (ball.isThrown()) {

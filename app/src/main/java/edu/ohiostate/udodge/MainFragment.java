@@ -32,9 +32,9 @@ public class MainFragment extends Fragment {
     private Button mPlayButton;
     private Button mLeaderboardButton;
     private Button mAvatarButton;
-    private ImageView mVolumeIcon;
+    //private ImageView mVolumeIcon;
     private ImageView mAvatarIcon;
-    private boolean mVolumeOn;
+    //private boolean mVolumeOn;
     private boolean mAvatarDetected;
     private static final int PICTURE_CODE = 31069;
 
@@ -67,15 +67,15 @@ public class MainFragment extends Fragment {
                         intent = new Intent(getActivity(), AvatarActivity.class);
                         startActivity(intent);
                         break;
-                    case R.id.volume_icon:
-                        if (mVolumeOn) {
-                            mVolumeIcon.setImageResource(R.drawable.volume_off_icon);
-                            mVolumeOn = false;
-                        } else {
-                            mVolumeIcon.setImageResource(R.drawable.volume_on_icon);
-                            mVolumeOn = true;
-                        }
-                        break;
+//                    case R.id.volume_icon:
+//                        if (mVolumeOn) {
+//                            mVolumeIcon.setImageResource(R.drawable.volume_off_icon);
+//                            mVolumeOn = false;
+//                        } else {
+//                            mVolumeIcon.setImageResource(R.drawable.volume_on_icon);
+//                            mVolumeOn = true;
+//                        }
+//                        break;
                 }
             }
         };
@@ -83,12 +83,12 @@ public class MainFragment extends Fragment {
         mPlayButton = (Button) v.findViewById(R.id.buttonPlay);
         mLeaderboardButton = (Button) v.findViewById(R.id.buttonLeaderboard);
         mAvatarButton = (Button) v.findViewById(R.id.buttonAvatarPicture);
-        mVolumeIcon = (ImageView) v.findViewById(R.id.volume_icon);
+        //mVolumeIcon = (ImageView) v.findViewById(R.id.volume_icon);
         mAvatarIcon = (ImageView) v.findViewById(R.id.avatar_icon);
         mPlayButton.setOnClickListener(clickListener);
         mLeaderboardButton.setOnClickListener(clickListener);
         mAvatarButton.setOnClickListener(clickListener);
-        mVolumeIcon.setOnClickListener(clickListener);
+        //mVolumeIcon.setOnClickListener(clickListener);
         mAvatarIcon.setOnClickListener(clickListener);
 
         // define shared preferences and its editor
@@ -113,7 +113,7 @@ public class MainFragment extends Fragment {
             }
         }
 
-        mVolumeOn = true;
+        //mVolumeOn = true;
         return v;
     }
 

@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:background="@color/colorWhite"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="30dp"
             android:textSize="20sp"
             android:textStyle="bold" />
         <Button
@@ -29,7 +29,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:background="@color/colorWhite"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="30dp"
             android:textSize="20sp"
             android:textStyle="bold"/>
         <Button
@@ -42,14 +42,14 @@
             android:textStyle="bold"/>
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/volume_icon"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_gravity="left|bottom"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:src="@drawable/volume_on_icon" />
+    <!--<ImageView-->
+        <!--android:id="@+id/volume_icon"-->
+        <!--android:layout_width="70dp"-->
+        <!--android:layout_height="70dp"-->
+        <!--android:layout_gravity="left|bottom"-->
+        <!--android:layout_marginBottom="10dp"-->
+        <!--android:layout_marginLeft="10dp"-->
+        <!--android:src="@drawable/volume_on_icon" />-->
 
     <ImageView
         android:id="@+id/avatar_icon"
