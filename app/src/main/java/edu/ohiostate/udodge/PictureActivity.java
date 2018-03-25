@@ -175,8 +175,8 @@ public class PictureActivity extends AppCompatActivity {
                 ((float) targetHeight - 1) / 2,
                 (Math.min(((float) targetWidth), ((float) targetHeight)) / 2),
                 Path.Direction.CCW);*/
-        /*path.addOval(new RectF(205, 82, targetHeight - 40,
-                targetWidth - 115), CCW);*/
+        path.addOval(new RectF(205, 82, targetHeight - 40,
+                targetWidth - 115), CCW);
 
         canvas.clipPath(path);
         Bitmap sourceBitmap = scaleBitmapImage;

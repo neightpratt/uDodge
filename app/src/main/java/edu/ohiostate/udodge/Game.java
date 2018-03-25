@@ -7,15 +7,22 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 import com.google.firebase.database.DataSnapshot;
@@ -29,6 +36,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+
+import static android.graphics.Path.Direction.CCW;
 
 /**
  * Created by Nate on 3/13/2018.
@@ -97,6 +106,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     Bitmap charHeadBitmap;
     Bitmap scaledCharBodyBitmap;
     Bitmap scaledCharHeadBitmap;
+    boolean avatarDetected;
 
     //obstacles
     private ArrayList<Ball> dodgeBalls;
@@ -115,8 +125,21 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     public void prepareGame () {
         //get resources
         charBodyBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.avatar_body); //load character body
-        //*************************************INSERT REAL HEAD IN HERE OR USE DEFAULT*****************************************************************************
-        charHeadBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.default_head); //load character head
+        // define shared preferences and its editor
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        avatarDetected = preferences.getBoolean("acceptedAvatar", false);
+        if (avatarDetected) {
+            String avatar_src = preferences.getString("real_avatar", null);
+            if (avatar_src != null) {
+                Bitmap avatarBits = BitmapFactory.decodeFile(avatar_src);
+                //avatarBits = Bitmap.createScaledBitmap(avatarBits, 1480, 1020, false);
+                charHeadBitmap = avatarBits;
+                charHeadBitmap = getRoundedShape(charHeadBitmap);
+            }
+        } else {
+            charHeadBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.default_head); //load default character head
+        }
+
         normalBallBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.normal_ball); //load character image
         background = BitmapFactory.decodeResource(getResources(),R.drawable.gym); //load a background
         //create arrays for holding character/ball positions
@@ -148,7 +171,13 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         screenHeight = h;
         //create character object
         scaledCharBodyBitmap = Bitmap.createScaledBitmap(charBodyBitmap, (int)(screenWidth * 0.35), (int)(screenHeight * 0.3), false);
-        scaledCharHeadBitmap = Bitmap.createScaledBitmap(charHeadBitmap, (int)(screenWidth * 0.13), (int)(screenHeight * 0.13), false);
+        if (avatarDetected) scaledCharHeadBitmap = Bitmap.createScaledBitmap(charHeadBitmap, (int)(screenWidth * 0.3), (int)(screenHeight * 0.15), false);
+        else scaledCharHeadBitmap = Bitmap.createScaledBitmap(charHeadBitmap, (int)(screenWidth * 0.15), (int)(screenHeight * 0.15), false);
+        if (avatarDetected) {
+            Matrix mat = new Matrix();
+            mat.postRotate(-90);
+            scaledCharHeadBitmap = Bitmap.createBitmap(scaledCharHeadBitmap, 0, 0, scaledCharHeadBitmap.getWidth(), scaledCharHeadBitmap.getHeight(), mat, false);
+        }
         character = new Character(scaledCharBodyBitmap, scaledCharHeadBitmap);
         characterBodyWidth = character.getBodyBitmap().getWidth();
         characterBodyHeight = character.getBodyBitmap().getHeight();
@@ -170,6 +199,37 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         character.setPositionNumber(1);
         character.setxPos(characterXPositions.get(character.getPositionNumber()));
         character.setyPos((int)(screenHeight * 0.25));
+    }
+
+    public Bitmap getRoundedShape(Bitmap scaleBitmapImage) {
+        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int targetWidth = metrics.widthPixels;
+        int targetHeight = metrics.heightPixels;
+
+        Bitmap targetBitmap = Bitmap.createBitmap(targetHeight,
+                targetWidth, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(targetBitmap);
+        Path path = new Path();
+        /*path.addCircle(
+                ((float) targetWidth - 1) / 2,
+                ((float) targetHeight - 1) / 2,
+                (Math.min(((float) targetWidth), ((float) targetHeight)) / 2),
+                Path.Direction.CCW);*/
+        path.addOval(new RectF(205, 82, targetHeight - 40,
+                targetWidth - 115), CCW);
+
+        canvas.clipPath(path);
+        Bitmap sourceBitmap = scaleBitmapImage;
+        canvas.drawBitmap(
+                sourceBitmap,
+                new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
+                        .getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
+                        .getHeight()), null);
+        return targetBitmap;
     }
 
     public void gameOver () {
@@ -338,7 +398,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                     } else { //got hit
                         ball.hit();
                         ball.setBitmap(scaledBallBitmap);
-                        gameOver();
+                        //gameOver();
                     }
                 }
             }
@@ -351,8 +411,10 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         canvas.drawBitmap(background, 0, 0, null);
 
         //Draw character
+        int headX = character.getxPos() + (characterBodyWidth / 2) - (characterHeadWidth / 2) + 5;
+        int headY = character.getyPos() - (int)(characterHeadHeight * 0.85);
         canvas.drawBitmap(character.getBodyBitmap(), character.getxPos(), character.getyPos(), null); //Draw the character on the rotated canvas.
-        canvas.drawBitmap(character.getHeadBitmap(), character.getxPos() + (characterBodyWidth / 2) - (characterHeadWidth / 2) + 5, character.getyPos() - (int)(characterHeadHeight * 0.95), null);
+        canvas.drawBitmap(character.getHeadBitmap(), headX, headY, null);
         //Draw dodge balls
         for (Ball ball : dodgeBalls) {
             if (ball.isThrown()) {
