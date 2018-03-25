@@ -186,18 +186,6 @@ public class PictureActivity extends AppCompatActivity {
                         .getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap
                         .getHeight()), null);
         Log.d(TAG, Integer.toString(targetBitmap.getHeight()));
-
-        boolean equal = true;
-        for (int i = 0; i < sourceBitmap.getWidth() && equal; i++) {
-            for (int j = 0; j < sourceBitmap.getHeight() && equal; j++) {
-                int sourcePixel = sourceBitmap.getPixel(i, j);
-                int targetPixel = targetBitmap.getPixel(i, j);
-                if (sourcePixel != targetPixel) {
-                    equal = false;
-                }
-            }
-        }
-        Log.d(TAG, "Equal? " + Boolean.toString(equal));
         return targetBitmap;
     }
 
