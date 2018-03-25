@@ -19,6 +19,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -27,16 +28,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PlayActivity" />
-        <activity android:name=".LeaderboardActivity" />
-        <activity android:name=".AvatarActivity">
+        <activity android:name=".PlayActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".LeaderboardActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".AvatarActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PictureActivity"></activity>
+        <activity android:name=".PictureActivity" android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>
