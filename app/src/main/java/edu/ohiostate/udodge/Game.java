@@ -398,7 +398,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                     } else { //got hit
                         ball.hit();
                         ball.setBitmap(scaledBallBitmap);
-                        //gameOver();
+                        gameOver();
                     }
                 }
             }
