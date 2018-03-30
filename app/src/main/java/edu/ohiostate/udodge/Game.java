@@ -115,7 +115,12 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     Bitmap scaledBallBitmap;
 
     private DatabaseReference mDatabase;
+    private DatabaseReference minDatabase;
     private int maxList = 100;
+    private static final String TAG = "Game";
+    private Score minScore;
+    private List<Score> scores;
+    private DataSnapshot mDataSnapshot;
 
     public Game(Context context) {
         super(context);
@@ -251,91 +256,147 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
             editor.commit();
         }
 
-        /*
-         * Pull the global database to see if the current score is in the top 100 scores
-         */
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("scores").addListenerForSingleValueEvent(new ValueEventListener(){
+
+
+
+        minDatabase = FirebaseDatabase.getInstance().getReference();
+        minDatabase.child("min_score").addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot){
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
                 /*
-                 * Get the global high scores
+                 * Get lowest high score
                  */
-                List<Score> scores = new ArrayList<>();
-                for (DataSnapshot scoresDataSnapshot : dataSnapshot.getChildren()){
-                    Score score = scoresDataSnapshot.getValue(Score.class);
-                    scores.add(score);
+                minScore = new Score();
+                for (DataSnapshot scoreDataSnapshot : dataSnapshot.getChildren()) {
+                    minScore = scoreDataSnapshot.getValue(Score.class);
                 }
 
-                /*
-                 * Order them greatest to least
-                 */
-                Collections.sort(scores, comparator);
+                Log.d(TAG, "min score: "+Integer.toString(minScore.getScore()));
+                Log.d(TAG, "uid: "+minScore.getUid());
 
-                /*
-                 * Check if the database has less than the max amount of entries or if the current
-                 * score is greater than the lowest score in the database
-                 */
-                Boolean add = false;
-                if (scores.size() < maxList){
-                    add = true;
-                }else if (mScore > scores.get(maxList - 1).getScore()){
-                    // Remove the lowest score from the database
-                    mDatabase.child("scores").child(scores.get(maxList - 1).getUid()).removeValue();
-                    add = true;
-                }
+                if (mScore > minScore.getScore()){
 
-                /*
-                 * If the score can be added to the database, bring up a dialog pop up window asking
-                 * for a name for the score
-                 */
-                if (add) {
-                    // Setup the pop up window
-                    AlertDialog.Builder builder = new AlertDialog.Builder(((Activity) getContext()));
-                    builder.setTitle("Congratulations!");
-                    builder.setMessage("Congratulations! You are in the top 100! Enter your name:");
+                    Log.d(TAG, "add new score");
 
-                    final EditText input = new EditText((Activity) getContext());
-                    input.setInputType(InputType.TYPE_CLASS_TEXT);
-                    builder.setView(input);
-
-                    // Click listener for when the user presses okay
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    /*
+                    * Pull the global database to see if the current score is in the top 100 scores
+                    */
+                    mDatabase = FirebaseDatabase.getInstance().getReference();
+                    mDatabase.child("scores").addListenerForSingleValueEvent(new ValueEventListener(){
 
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Add the score to the database
-                            Score score = new Score();
-                            score.setUid(mDatabase.child("scores").push().getKey());
-                            score.setName(input.getText().toString());
-                            score.setScore(mScore);
-                            mDatabase.child("scores").child(score.getUid()).setValue(score);
+                        public void onDataChange(DataSnapshot dataSnapshot) {
 
-                            ((Activity) getContext()).finish();
+                            mDataSnapshot = dataSnapshot;
+
+
+                           /*
+                             * bring up a dialog pop up window asking for a name for the score
+                             */
+                            // Setup the pop up window
+                            AlertDialog.Builder builder = new AlertDialog.Builder(((Activity) getContext()));
+                            builder.setTitle("Congratulations!");
+                            builder.setMessage("Congratulations! You are in the top 100! Enter your name:");
+
+                            final EditText input = new EditText((Activity) getContext());
+                            input.setInputType(InputType.TYPE_CLASS_TEXT);
+                            builder.setView(input);
+
+                            // Click listener for when the user presses okay
+                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.d(TAG, "In on click");
+
+                                    /*
+                                     * Get the global high scores
+                                     */
+                                    scores = new ArrayList<>();
+                                    for (DataSnapshot scoresDataSnapshot : mDataSnapshot.getChildren()) {
+                                        Score score = scoresDataSnapshot.getValue(Score.class);
+                                        scores.add(score);
+                                    }
+
+                                    Log.d(TAG, "Size of database: " + Integer.toString(scores.size()));
+
+                                    /*
+                                     * Order them greatest to least
+                                     */
+                                    Collections.sort(scores, comparator);
+
+
+                                    /*
+                                     * Remove lowest score
+                                     */
+
+                                    /*
+                                    Score testscore = new Score();
+                                    testscore.setUid(mDatabase.child("scores").push().getKey());
+                                    testscore.setName("Boo Boo Bloop");
+                                    testscore.setScore(89);
+                                    mDatabase.child("scores").child(testscore.getUid()).setValue(testscore);
+                                    */
+
+                                    Log.d(TAG, "Removing score from database");
+                                    mDatabase.child("scores").child(scores.get(maxList - 1).getUid()).removeValue();
+
+                                    /*
+                                     * Set new minimum score
+                                     */
+                                    Log.d(TAG, "Setting new score");
+                                    minScore.setScore(scores.get(maxList - 2).getScore());
+                                    Log.d(TAG, "got new min score: "+Integer.toString(minScore.getScore()));
+                                    Log.d(TAG, "uid: "+minScore.getUid());
+                                    minDatabase.child("min_score").child(minScore.getUid()).setValue(minScore);
+
+
+
+                                    Log.d(TAG, "Adding new score");
+                                    // Add the score to the database
+                                    Score score = new Score();
+                                    score.setUid(mDatabase.child("scores").push().getKey());
+                                    score.setName(input.getText().toString());
+                                    score.setScore(mScore);
+                                    mDatabase.child("scores").child(score.getUid()).setValue(score);
+
+                                    Log.d(TAG, "Finish");
+                                    ((Activity) getContext()).finish();
+                                }
+                            });
+
+                            // Click listener for when the user presses cancel
+                            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    ((Activity) getContext()).finish();
+                                }
+                            });
+
+                            builder.show();
+
                         }
-                    });
 
-                    // Click listener for when the user presses cancel
-                    builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ((Activity) getContext()).finish();
+                        public void onCancelled(DatabaseError databaseError){
+
                         }
                     });
-
-                    builder.show();
                 }else{
-                    //********************************************need to display received score and give options to retry or quit*****************************************************
+                    Log.d(TAG, "dont add new score");
                     ((Activity) getContext()).finish();
-                }
-            }
 
+                }
+
+            }
             @Override
-            public void onCancelled(DatabaseError databaseError){
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+
     }
 
     public void myUpdate() {

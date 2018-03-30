@@ -44,8 +44,4 @@ public class Score {
     public Date getDate(){
         return mDate;
     }
-
-    public void setDate(Date date){
-        mDate = date;
-    }
 }
