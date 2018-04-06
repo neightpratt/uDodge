@@ -1,16 +1,21 @@
 package edu.ohiostate.udodge;
 
+import android.*;
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +42,8 @@ public class MainFragment extends Fragment {
     //private boolean mVolumeOn;
     private boolean mAvatarDetected;
     private static final int PICTURE_CODE = 31069;
+    private static final int MY_CAMERA_REQUEST_CODE = 4657;
+    private PermissionSlip p;
 
     @Override
     public void onCreate(Bundle savedInstance) {
@@ -48,6 +55,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView() called");
         View v = inflater.inflate(R.layout.fragment_main, container, false);
+
+        p = new PermissionSlip();
+        p.run();
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
@@ -67,15 +77,6 @@ public class MainFragment extends Fragment {
                         intent = new Intent(getActivity(), AvatarActivity.class);
                         startActivity(intent);
                         break;
-//                    case R.id.volume_icon:
-//                        if (mVolumeOn) {
-//                            mVolumeIcon.setImageResource(R.drawable.volume_off_icon);
-//                            mVolumeOn = false;
-//                        } else {
-//                            mVolumeIcon.setImageResource(R.drawable.volume_on_icon);
-//                            mVolumeOn = true;
-//                        }
-//                        break;
                 }
             }
         };
@@ -167,5 +168,40 @@ public class MainFragment extends Fragment {
         File avatarDirectory = new File(Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "uDodge");
 
+    }
+
+   private class PermissionSlip implements Runnable {
+        @Override
+        public void run() {
+            boolean obtainedPermissions = ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+            if (!obtainedPermissions) {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, MY_CAMERA_REQUEST_CODE);
+            }
+
+            Log.d(TAG, "Done with permission request.");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        boolean allGranted = true;
+        if (requestCode == MY_CAMERA_REQUEST_CODE) {
+            for (int i = 0; i < grantResults.length && allGranted; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                }
+            }
+            if (allGranted) {
+                Log.d(TAG, "Successfully obtained all permissions.");
+            } else {
+                Log.d(TAG, "Somehow not all permissions were obtained.");
+                p.run();
+            }
+        }
     }
 }

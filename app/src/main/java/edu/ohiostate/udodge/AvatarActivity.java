@@ -41,6 +41,7 @@ public class AvatarActivity extends AppCompatActivity {
         private Camera mCamera;
         private CameraPreview mCameraPreview;
         private Button mCaptureButton;
+        private boolean obtainedPermissions;
         private static final int MY_CAMERA_REQUEST_CODE = 4657;
 
         /**
@@ -54,6 +55,8 @@ public class AvatarActivity extends AppCompatActivity {
             mCameraPreview = new CameraPreview(this, mCamera);
             FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
             preview.addView(mCameraPreview);
+
+            Log.d("AvatarActivity", "Obtained permissions recorded");
 
             mCaptureButton = (Button) findViewById(R.id.button_capture);
             mCaptureButton.setOnClickListener(new View.OnClickListener() {
@@ -74,28 +77,15 @@ public class AvatarActivity extends AppCompatActivity {
         }
 
         private void obtainCamera() {
-            //Toast.makeText(this, "Attempting to get camera.", Toast.LENGTH_SHORT).show();
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                Log.d("AvatarActivity", "Requesting appropriate permissions");
-                //Toast.makeText(this, "No permission to use camera", Toast.LENGTH_SHORT).show();
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, MY_CAMERA_REQUEST_CODE);
-                obtainCamera();
-            } else {
-                mCamera = getCameraInstance();
-            }
+            mCamera = getCameraInstance();
         }
 
         @Override
         protected void onPause() {
             super.onPause();
             Log.d("AvatarActivity", "onPause() called");
-            /*mCamera.release();
-            Log.d("PAUSE", "Camera released");
             mCamera.stopPreview();
-            mCamera = null;*/
+            //mCamera.release();
         }
 
         @Override
@@ -105,6 +95,14 @@ public class AvatarActivity extends AppCompatActivity {
                 obtainCamera();
             }
             mCamera.startPreview();
+        }
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            Log.d("AvatarActivity", "onDestroy() called");
+            mCamera.release();
+            mCamera = null;
         }
 
         /**
