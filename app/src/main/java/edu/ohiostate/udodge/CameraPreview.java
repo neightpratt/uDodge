@@ -29,26 +29,32 @@ public class CameraPreview extends SurfaceView implements
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        Log.d("AvatarActivity", "Surface created");
         try {
             mCamera.setPreviewDisplay(surfaceHolder);
             mCamera.setDisplayOrientation(90);
-            mCamera.startPreview();
         } catch (IOException e) {
-            // left blank for now
+            Log.e("AvatarActivity", e.getMessage());
+            mCamera.release();
+            mCamera = null;
         }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        Log.d("AvatarActivity", "Surface destroyed");
         mCamera.stopPreview();
         mCamera.release();
+        mCamera = null;
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int format,
                                int width, int height) {
         // start preview with new settings
+        Log.d("AvatarActivity", "Surface Changed");
         try {
+            mCamera.stopPreview();
             mCamera.setPreviewDisplay(surfaceHolder);
             mCamera.startPreview();
         } catch (Exception e) {

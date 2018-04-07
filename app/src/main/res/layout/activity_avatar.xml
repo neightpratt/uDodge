@@ -5,6 +5,7 @@
     android:id="@+id/av_container"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="#000"
     android:orientation="vertical">
 
     <FrameLayout
