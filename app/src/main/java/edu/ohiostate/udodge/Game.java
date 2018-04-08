@@ -417,7 +417,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
             final AlertDialog.Builder builder = new AlertDialog.Builder(((Activity) getContext()));
             builder.setTitle("No Internet Connection");
-            builder.setMessage("Sorry, your device is not connected to the internet and your score cannot be upload to the global leaderboard.");
+            builder.setMessage("Sorry, your device is not connected to the internet and your score cannot be uploaded to the global leaderboard.");
 
 
             // Click listener for when the user presses okay
