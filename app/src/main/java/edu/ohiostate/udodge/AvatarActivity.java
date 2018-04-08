@@ -41,7 +41,7 @@ public class AvatarActivity extends AppCompatActivity {
         private Camera mCamera;
         private CameraPreview mCameraPreview;
         private Button mCaptureButton;
-        private boolean obtainedPermissions;
+        private FrameLayout preview;
         private static final int MY_CAMERA_REQUEST_CODE = 4657;
 
         /**
@@ -51,12 +51,30 @@ public class AvatarActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_avatar);
+        }
+
+        private void obtainCamera() {
+            mCamera = getCameraInstance();
+        }
+
+        @Override
+        protected void onPause() {
+            super.onPause();
+            Log.d("AvatarActivity", "onPause() called");
+            mCamera.stopPreview();
+            preview.removeView(mCameraPreview);
+            mCamera.release();
+            mCameraPreview = null;
+        }
+
+        @Override
+        protected void onResume() {
+            super.onResume();
+            Log.d("AvatarActivity", "onResume() called");
             obtainCamera();
             mCameraPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview = (FrameLayout) findViewById(R.id.camera_preview);
             preview.addView(mCameraPreview);
-
-            Log.d("AvatarActivity", "Obtained permissions recorded");
 
             mCaptureButton = (Button) findViewById(R.id.button_capture);
             mCaptureButton.setOnClickListener(new View.OnClickListener() {
@@ -74,34 +92,14 @@ public class AvatarActivity extends AppCompatActivity {
 
                         }
                     }).show();
-        }
-
-        private void obtainCamera() {
-            mCamera = getCameraInstance();
-        }
-
-        @Override
-        protected void onPause() {
-            super.onPause();
-            Log.d("AvatarActivity", "onPause() called");
-            mCamera.stopPreview();
-            //mCamera.release();
-        }
-
-        @Override
-        protected void onResume() {
-            super.onResume();
-            if (mCamera == null) {
-                obtainCamera();
-            }
-            mCamera.startPreview();
+            //mCamera.startPreview();
         }
 
         @Override
         protected void onDestroy() {
             super.onDestroy();
             Log.d("AvatarActivity", "onDestroy() called");
-            mCamera.release();
+            //mCamera.release();
             mCamera = null;
         }
 
